@@ -18,12 +18,18 @@ class Integrator:
     Abstraction over the process for integrating s2 cells together with spatial relations.
     """
 
-    def __init__(self, compressed: bool):
+    def __init__(self, compressed: bool, folder: str | Path):
+        """
+        Creates a new Integrator
+
+        :param compressed: Whether the triples are compressed or not
+        :param folder: Path to the folder where the triples are
+        """
         if compressed:
             print(
                 "Compression is on. Relations will be compressed using the S2 hierarchy..."
             )
-        data_path = Path("./output/")
+        data_path = Path(folder)
         output_folder = f"./output/{data_path.stem}"
 
         if compressed:
