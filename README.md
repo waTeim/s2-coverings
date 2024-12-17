@@ -22,7 +22,9 @@ There are two tools:
 
 ### Docker
 
-Docker should be used to generate the s2 coverings, which can be done by running the following from the root folder.
+The project dependencies can be difficult to install; docker images are provided so that the code can be run in different environments without needing to install dependencies. Rather than offering a docker image for each cript, both scripts are included in the image and they can be called externally
+
+#### Generating S2 Cells
 
 ```bash
 git clone https://github.com/KnowWhereGraph/s2-coverings.git
@@ -30,13 +32,14 @@ cd s2-coverings
 docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --level <level>
 ```
 
-Cell integration can be disabled by adding the `--ni` flag to the command,
+#### S2 Integration
+
 
 ```bash
-docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --level <level>
+docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/integrate.py --path <path to geometries>
 ```
 
-A complete list of options can be found by running
+A complete list of options can be found by running the help command on each tool. For example,
 ```bash
 python3 src/s2.py --help
 options:
