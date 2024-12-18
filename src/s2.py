@@ -144,20 +144,6 @@ if __name__ == "__main__":
         nargs="?",
         default="ttl",
     )
-    parser.add_argument(
-        "--ni",
-        help="When used, s2 integration is disabled",
-        nargs="?",
-        const=1,
-        type=int,
-    )
-    parser.add_argument(
-        "--compressed",
-        help="use the S2 hierarchy to write a compressed collection of relations at various levels",
-        type=bool,
-        nargs="?",
-        default=True,
-    )
     args = parser.parse_args()
 
     level = args.level
@@ -190,7 +176,3 @@ if __name__ == "__main__":
         )
         cell_id_integers = [parent.id() for parent in parents]
         level -= 1
-
-    # Handle integration
-    if not args.ni:
-        Integrator(args.compressed)

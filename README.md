@@ -11,11 +11,20 @@ Rather than relying on geosparql functions (which in turn rely on geosparql supp
 
 This breaks the reliance on the need for the graph database to support s2 indexing and instead make use of the predicate index from the pre-materialized spatial relations.
 
+## Cell Generation and Integration
+
+There are two tools:
+
+1. s2.py: This generates the S2 cell structure at a desired layer. For example, generating cells at level 3 and 4.
+2. integrate.py: This performs s2 integrations against existing geometries. These may be your own geometries, they may be the output of the s2 tool. 
+
 ## Running
 
 ### Docker
 
-Docker should be used to generate the s2 coverings, which can be done by running the following from the root folder.
+The project dependencies can be difficult to install; docker images are provided so that the code can be run in different environments without needing to install dependencies. Rather than offering a docker image for each cript, both scripts are included in the image and they can be called externally
+
+#### Generating S2 Cells
 
 ```bash
 git clone https://github.com/KnowWhereGraph/s2-coverings.git
@@ -23,20 +32,20 @@ cd s2-coverings
 docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --level <level>
 ```
 
-Cell integration can be disabled by adding the `--ni` flag to the command,
+#### S2 Integration
+
 
 ```bash
-docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --level <level> --ni
+docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/integrate.py --path <path to geometries>
 ```
 
-A complete list of options can be found by running
+A complete list of options can be found by running the help command on each tool. For example,
 ```bash
 python3 src/s2.py --help
 options:
   -h, --help            show this help message and exit
   --level LEVEL         Level at which the s2 cells are generated for
   --format [FORMAT]     The format to write the RDF in. Options are xml, n3, turtle, nt, pretty-xml, trix, trig, nquads, json-ld, hext
-  --ni [NI]             When used, s2 integration is disabled
   --compressed [COMPRESSED]
                         use the S2 hierarchy to write a compressed collection of relations at various levels
 ```
