@@ -1,7 +1,7 @@
 import os
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List
+from typing import Any, Generator
 
 from rdflib import Graph
 from s2geometry import S2Cell, S2CellId
@@ -71,7 +71,7 @@ class S2LevelGenerator:
             ):
                 pass
 
-    def generate_cells_at_level(self) -> List[str]:
+    def generate_cells_at_level(self) -> Generator[list[str], Any, None]:
         """
         Generates a chunked list of all the s2 cells in the current level.
         The list is chunked into groups of s2 cells. Each group will be processed separately
@@ -79,7 +79,7 @@ class S2LevelGenerator:
         s2 objects can't be picked. So rather than passing the argument, its numeric id is
         provided instead.
 
-        :return
+        :return: A batch of S2 cell identifiers
         """
         # Get the current and end ID to eventually iterate between
         current_id = S2CellId.Begin(level=self.level)
@@ -92,8 +92,9 @@ class S2LevelGenerator:
             # If the threshold is met, add the mini batch to the full
             # batch and clear the mini batch for the next iteration
             if len(id_batch) == self.batch_size:
-                current_id = current_id.next()
                 yield id_batch
                 id_batch = []
             current_id = current_id.next()
+        if not len(id_batch):
+            return
         yield id_batch
