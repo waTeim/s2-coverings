@@ -19,9 +19,10 @@ class S2Writer:
         """
         Create a new S2Writer
         """
+        raise NotImplementedError("The s2Writer class should be used statically")
 
     @staticmethod
-    def create_output_path(level: Path | None, output_path: Path):
+    def create_output_path(level: int | None, output_path: Path) -> None:
         """
         Creates the directory path to where the rdf files will be written to.
 
@@ -34,12 +35,12 @@ class S2Writer:
         os.makedirs(output_path, exist_ok=True)
 
     @staticmethod
-    def write(graph: Graph, output_path: Path, rdf_format: str):
+    def write(graph: Graph, output_path: Path, rdf_format: str) -> None:
         """
         Writes a knowledge graph to disk
 
         :param graph: The graph being written
-        :param filepath: Path where the file will be written to
+        :param output_path: Path where the file will be written to
         :param rdf_format: The rdf format of the file
         """
         start_time = time.time()

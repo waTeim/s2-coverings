@@ -40,10 +40,8 @@ def generate_cell_iri(cell_id: S2CellId) -> URIRef:
     """
     Creates an IRI for an individual cell, with a KnowWhereGraph domain
 
-    Args:
-        cell_id: The ID of the s2 cell
-    Returns:
-         A URI of the s2 cell
+    :param cell_id: The ID of the s2 cell
+    :return: A URI representing the s2 cell
     """
     level = cell_id.level()
     id_str = str(cell_id.id())
@@ -74,7 +72,12 @@ file_extensions = {
 }
 
 
-def get_graph():
+def get_graph() -> Graph:
+    """
+    Gets an rdflib graph with the prefixes used by the project
+
+    :return: A standard graph object
+    """
     graph = Graph()
     for pfx in namespace_prefix:
         graph.bind(pfx, namespace_prefix[pfx])
