@@ -1,4 +1,4 @@
-from rdflib import RDF, RDFS, XSD, URIRef
+from rdflib import RDF, RDFS, XSD, Graph, URIRef
 from rdflib.namespace import DefinedNamespace, Namespace
 from s2geometry import S2Cell, S2CellId
 
@@ -46,7 +46,7 @@ def generate_cell_iri(cell_id: S2CellId) -> URIRef:
          A URI of the s2 cell
     """
     level = cell_id.level()
-    id_str = cell_id.id()
+    id_str = str(cell_id.id())
     return KWGOnt.KWGR[f"{'s2.level'}{level}.{id_str}"]
 
 
@@ -59,3 +59,23 @@ namespace_prefix = {
     "rdfs": RDFS,
     "xsd": XSD,
 }
+
+file_extensions = {
+    "ttl": ".ttl",
+    "turtle": ".ttl",
+    "xml": ".xml",
+    "nq": ".nq",
+    "n3": "n3",
+    "nt": ".nt",
+    "trix": ".trix",
+    "trig": ".trig",
+    "nquads": ".nq",
+    "json-ld": ".jsonld",
+}
+
+
+def get_graph():
+    graph = Graph()
+    for pfx in namespace_prefix:
+        graph.bind(pfx, namespace_prefix[pfx])
+    return graph
