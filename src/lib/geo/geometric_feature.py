@@ -43,6 +43,7 @@ class GeometricFeature:
         self.min = min
         self.max = max
         self.geometry = geometry
+        self.iri = IRI
 
     @staticmethod
     def orient(
@@ -101,7 +102,7 @@ class GeometricFeature:
         for boundary in GeometricFeature.boundaries(self.geometry):
             segmented_boundary = boundary.segmentize(self.tolerance)
             buff = buffer(segmented_boundary, self.tolerance / 100, 2)
-            for cell_id in self.covering(
+            for cell_id in self.covering_with_geo(
                 buff,
                 coverer=ConstrainedS2RegionCoverer(self.min, self.max),
             ):
@@ -111,8 +112,7 @@ class GeometricFeature:
         self,
         line_obj: LineString | MultiLineString,
     ) -> Generator[S2CellId, None, None]:
-        """Yields those Cell IDs in a level 13 covering of a
-        small (multi)polygon buffer around the given (multi)line string
+        """Yields those Cell IDs  covering a small (multi)polygon buffer around the given (multi)line string
         to a certain degree of tolerance. The buffer is constructed
         so that its border is at a distance of tolerance/100 from the
         (multi)line string.
@@ -124,7 +124,7 @@ class GeometricFeature:
         """
 
         buff = buffer(line_obj, self.tolerance / 100, 2)
-        for cell_id in self.covering(
+        for cell_id in self.covering_with_geo(
             buff, ConstrainedS2RegionCoverer(self.min, self.max)
         ):
             yield cell_id
@@ -227,6 +227,22 @@ class GeometricFeature:
         covering = coverer.GetCovering(s2_obj)
         return covering
 
+    def covering_with_geo(
+        self,
+            geometry: Point | LinearRing | LineString | Polygon | MultiPolygon,
+        coverer: S2RegionCoverer,
+    ) -> list[S2CellId]:
+        """Returns a covering of a batch of s2 cell IDs appearing in a homogeneous
+        covering of a 2-dimensional geometry to a certain value of tolerance
+        Args:
+            coverer:
+        Returns:
+            list[S2CellId]: A list of s2 cell IDs that cover the geometry
+        """
+        s2_obj = self.s2_approximation(geometry)
+        covering = coverer.GetCovering(s2_obj)
+        return covering
+
     def yield_s2_relations(
         self, coverer: S2RegionCoverer
     ) -> Generator[tuple[URIRef, URIRef, URIRef], None, None]:
@@ -245,7 +261,7 @@ class GeometricFeature:
                 yield generate_cell_iri(cell_id), inverse, self.iri
 
             predicate = KWGOnt.sfOverlaps
-            for cell_id in self.yield_overlapping_ids(self.geometry):
+            for cell_id in self.yield_overlapping_ids():
                 yield self.iri, predicate, generate_cell_iri(cell_id)
                 yield generate_cell_iri(cell_id), predicate, self.iri
 

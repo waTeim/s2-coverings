@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-import glob
 import os
 from functools import partial
-from json import loads
 from multiprocessing import Pool
 from pathlib import Path
 
 from rdflib import Graph
 
 from ..geo.constrained_s2_region_converer import ConstrainedS2RegionCoverer
-from ..geo.geometric_feature import GeometricFeature
 from ..geo.geometric_features import GeometricFeatures
 from ..rdf.s2_writer import S2Writer
-
+from ..rdf.kwg_ont import file_extensions
 
 class Integrator:
     """
@@ -64,25 +61,23 @@ class Integrator:
             min_level=min_level,
             max_level=max_level,
         )
-        print("Getting features")
         geo_features = GeometricFeatures(geometry_path, tolerance, min_level, max_level)
-        print("mapping features")
         with Pool() as pool:
             pool.map(write, [geo_features])
 
     def write_all_relations(
         self,
-        geo_features: [GeometricFeature],
+        geo_features: GeometricFeatures,
         output_folder: str,
         is_compressed: bool,
         rdf_format: str,
         min_level: int,
         max_level: int,
     ) -> None:
-        print("Writing triples")
         graph = Graph()
-
+        filename = ''
         for geo_feature in geo_features:
+            filename = geo_feature.iri
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
@@ -92,6 +87,8 @@ class Integrator:
 
             for s2_triple in geo_feature.yield_s2_relations(coverer):
                 graph.add(s2_triple)
-
-            destination = os.path.join(output_folder, f"test.ttl")
-            S2Writer.write(graph, Path(destination), rdf_format)
+            filename = filename.split('/')[-1] + file_extensions[rdf_format]
+        destination = os.path.join(output_folder, filename)
+        print("Writing triples")
+        print(destination)
+        S2Writer.write(graph, Path(destination), rdf_format)

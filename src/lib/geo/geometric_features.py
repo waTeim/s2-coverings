@@ -1,7 +1,9 @@
 from pathlib import Path
+from typing import Generator
 
 from .geometric_feature import GeometricFeature
 from .geometry_parser import GeometryParser
+from shapely.wkt import loads
 
 
 class GeometricFeatures:
@@ -14,8 +16,10 @@ class GeometricFeatures:
         self.min_level = min_level
         self.max_level = max_level
 
-    def __iter__(self):
-        """ """
+    def __iter__(self) -> Generator[GeometricFeature, None, None]:
+        """
+        Iterates over the geometric features loaded from disk
+        """
         for solution in GeometryParser.parse(self.path):
             iri = solution["feature_iri"]
             geometry = loads(solution["wkt"])
