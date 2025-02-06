@@ -6,9 +6,9 @@ from typing import List
 from rdflib import Graph
 from s2geometry import S2Cell, S2CellId
 
+from ..rdf.kwg_ont import file_extensions
 from ..rdf.s2_writer import S2Writer
 from .s2_rdf_generator import S2RDFGenerator
-from ..rdf.kwg_ont import file_extensions
 
 
 class S2LevelGenerator:
@@ -53,8 +53,9 @@ class S2LevelGenerator:
 
         # Once the batch is processed, write the file
         filepath = os.path.join(
-
-            self.output_path, f"level_{self.level}", f"{str(cell_ids[0])}{file_extensions[self.rdf_format]}"
+            self.output_path,
+            f"level_{self.level}",
+            f"{str(cell_ids[0])}{file_extensions[self.rdf_format]}",
         )
 
         S2Writer.write(graph, Path(filepath), self.rdf_format)

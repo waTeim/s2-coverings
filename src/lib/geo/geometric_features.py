@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Generator
 
+from shapely.wkt import loads
+
 from .geometric_feature import GeometricFeature
 from .geometry_parser import GeometryParser
-from shapely.wkt import loads
 
 
 class GeometricFeatures:

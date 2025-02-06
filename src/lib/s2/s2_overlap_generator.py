@@ -11,9 +11,10 @@ from shapely.wkt import loads
 
 from ..geo.geometric_feature import GeometricFeature
 from ..geo.geometry_parser import GeometryParser
+from ..rdf.kwg_ont import file_extensions
 from ..rdf.s2_writer import S2Writer
 from ..s2.s2_rdf_generator import S2RDFGenerator
-from ..rdf.kwg_ont import file_extensions
+
 
 class S2OverlapGenerator:
     """

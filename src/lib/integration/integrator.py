@@ -9,8 +9,9 @@ from rdflib import Graph
 
 from ..geo.constrained_s2_region_converer import ConstrainedS2RegionCoverer
 from ..geo.geometric_features import GeometricFeatures
-from ..rdf.s2_writer import S2Writer
 from ..rdf.kwg_ont import file_extensions
+from ..rdf.s2_writer import S2Writer
+
 
 class Integrator:
     """
@@ -75,7 +76,7 @@ class Integrator:
         max_level: int,
     ) -> None:
         graph = Graph()
-        filename = ''
+        filename = ""
         for geo_feature in geo_features:
             filename = geo_feature.iri
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
@@ -87,7 +88,7 @@ class Integrator:
 
             for s2_triple in geo_feature.yield_s2_relations(coverer):
                 graph.add(s2_triple)
-            filename = filename.split('/')[-1] + file_extensions[rdf_format]
+            filename = filename.split("/")[-1] + file_extensions[rdf_format]
         destination = os.path.join(output_folder, filename)
         print("Writing triples")
         print(destination)

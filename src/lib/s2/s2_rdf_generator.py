@@ -2,20 +2,13 @@ from typing import Generator, List
 
 from rdflib import RDF, RDFS, XSD, Literal, URIRef
 from rdflib.namespace._GEO import GEO
-from s2geometry import (
-    S2Cell,
-    S2CellId,
-    S2LatLng,
-    S2Loop,
-    S2Point,
-    S2Polygon,
-    S2Polyline,
-    S2RegionCoverer,
-)
+from s2geometry import (S2Cell, S2CellId, S2LatLng, S2Loop, S2Point, S2Polygon,
+                        S2Polyline, S2RegionCoverer)
 from shapely import MultiPolygon
 from shapely.geometry import Polygon
 
-from ..rdf.kwg_ont import KWGOnt, generate_cell_iri, get_graph, namespace_prefix
+from ..rdf.kwg_ont import (KWGOnt, generate_cell_iri, get_graph,
+                           namespace_prefix)
 
 
 class S2RDFGenerator:

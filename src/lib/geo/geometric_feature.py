@@ -4,24 +4,10 @@ from functools import partial
 from typing import Generator, Optional
 
 from rdflib import URIRef
-from s2geometry import (
-    S2Cell,
-    S2CellId,
-    S2LatLng,
-    S2Loop,
-    S2Point,
-    S2Polygon,
-    S2Polyline,
-    S2RegionCoverer,
-)
-from shapely import (
-    LinearRing,
-    LineString,
-    MultiPolygon,
-    Point,
-    Polygon,
-    buffer,
-)
+from s2geometry import (S2Cell, S2CellId, S2LatLng, S2Loop, S2Point, S2Polygon,
+                        S2Polyline, S2RegionCoverer)
+from shapely import (LinearRing, LineString, MultiPolygon, Point, Polygon,
+                     buffer)
 from shapely.geometry.polygon import signed_area
 
 from ..rdf.kwg_ont import KWGOnt, generate_cell_iri
@@ -229,7 +215,7 @@ class GeometricFeature:
 
     def covering_with_geo(
         self,
-            geometry: Point | LinearRing | LineString | Polygon | MultiPolygon,
+        geometry: Point | LinearRing | LineString | Polygon | MultiPolygon,
         coverer: S2RegionCoverer,
     ) -> list[S2CellId]:
         """Returns a covering of a batch of s2 cell IDs appearing in a homogeneous
