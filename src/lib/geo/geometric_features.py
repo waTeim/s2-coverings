@@ -28,13 +28,3 @@ class GeometricFeatures:
                 geometry, iri, self.tolerance, self.min_level, self.max_level
             )
 
-    def __next__(self):
-        """
-        Iterates to the next geometric feature
-        """
-        solution = GeometryParser.parse(self.path)
-        iri = solution["feature_iri"]
-        geometry = loads(solution["wkt"])
-        yield GeometricFeature(
-            geometry, iri, self.tolerance, self.min_level, self.max_level
-        )
