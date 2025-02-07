@@ -24,7 +24,7 @@ class S2LevelGenerator:
         :param rdf_format: The desired format the child cells to be in
         :param chunk_size: The number of cells to include in a single file
         :param target_parent_level: The parent level to integrate with
-        :param output_path:
+        :param output_path: Path where the triples are written
 
         Create a new level generator
         """
