@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Any, Generator
 
 from rdflib import Graph
 from rdflib.query import ResultRow
@@ -25,7 +26,7 @@ class GeometryParser:
                     yield file_path
 
     @staticmethod
-    def parse(path: Path) -> ResultRow:
+    def parse(path: Path) -> Generator[ResultRow, Any, None]:
         """
         Parses an RDF file for geometries, specified under the geosparql ontology
 
