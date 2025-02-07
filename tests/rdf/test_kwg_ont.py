@@ -30,4 +30,6 @@ def test_get_graph():
         if "geo" == ns_prefix:
             found_geosparql = True
     if not found_geosparql:
-        raise AssertionError("Failed to find the geosparql namesapce in the default graph")
+        raise AssertionError(
+            "Failed to find the geosparql namesapce in the default graph"
+        )
