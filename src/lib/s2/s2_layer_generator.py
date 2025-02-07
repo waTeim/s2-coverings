@@ -26,7 +26,8 @@ class S2LevelGenerator:
         :param target_parent_level: The parent level to integrate with
         :param output_path: Path where the triples are written
 
-        Create a new level generator
+        Create a new level generator. Upon creation, the generation process begins
+        when the worker processes are spawned.
         """
         self.level = level
         self.rdf_format = rdf_format
