@@ -1,7 +1,7 @@
 import os
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List, Any, Generator, Dict
+from typing import Any, Dict, Generator, List
 
 from rdflib import Graph
 from s2geometry import S2Cell, S2CellId, S2RegionCoverer
@@ -62,17 +62,19 @@ class S2OverlapGenerator:
         """
         result_set = []
         for geo_result in GeometryParser.parse(self.geometry_path):
-            result_set.append({'wkt': geo_result['wkt'], 'feature_iri': geo_result['feature_iri']})
+            result_set.append(
+                {"wkt": geo_result["wkt"], "feature_iri": geo_result["feature_iri"]}
+            )
             if len(result_set) == self.batch_size:
                 yield result_set
                 result_set = []
         if not len(result_set):
-
             return
         yield result_set
 
-
-    def write_to_rdf(self, result_batch: Generator[List[Dict[str, str]], Any, None]) -> None:
+    def write_to_rdf(
+        self, result_batch: Generator[List[Dict[str, str]], Any, None]
+    ) -> None:
         """
         Writes an S2Cell to RDF
 
@@ -80,7 +82,7 @@ class S2OverlapGenerator:
         """
         graph = Graph()
 
-        file_prepend = ''
+        file_prepend = ""
         for single_result in self.generate_cell_batches(result_batch):
             for cell_id in single_result:
                 single_cell_id = S2CellId(cell_id)
@@ -92,7 +94,9 @@ class S2OverlapGenerator:
                 rdf_generator = S2RDFGenerator(single_cell_id.id(), parent.id(), "ttl")
                 graph += rdf_generator.graph
         file_name = str(file_prepend) + file_extensions[self.rdf_format]
-        destination = os.path.join(self.output_folder,f"level_{self.max_level}" , file_name)
+        destination = os.path.join(
+            self.output_folder, f"level_{self.max_level}", file_name
+        )
         S2Writer.write(graph, Path(destination), "ttl")
 
     def get_ids(self, current_batch) -> List[int]:
@@ -112,9 +116,9 @@ class S2OverlapGenerator:
         )
         return [cell_id.id() for cell_id in feature.covering(coverer)]
 
-
-    def generate_cell_batches(self, features: Generator[List[Dict[str, str]], Any, None]) -> Generator[
-        list[int] | list[list[int]], None, None]:
+    def generate_cell_batches(
+        self, features: Generator[List[Dict[str, str]], Any, None]
+    ) -> Generator[list[int] | list[list[int]], None, None]:
         """
         Given a set of features, generate the identifiers of the S2 cells that overlap it.
         This works by first loading the WKT RDF result into a shapely geometry. Then,
