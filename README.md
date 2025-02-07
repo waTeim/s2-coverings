@@ -58,7 +58,7 @@ docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py 
 git clone
 cd s2-coverings
 docker build -t s2-coverings .
-docker run -v ./:/s2 s2-coverings python3 src/s2.py --path <path_to_geometries> --output_path=output/ --min_level=5 --max_level=5
+docker run -v ./:/s2 s2-coverings python3 src/s2.py --geometry_path <path_to_geometries> --output_path=output/ --min_level=5 --max_level=5
 ```
 
 ### Integrating S2 Cells With Another Layer 

@@ -20,7 +20,6 @@ class GeometryParser:
     @staticmethod
     def get_files(directory):
         for path, _, files in os.walk(directory):
-            print(files)
             for file in files:
                 if not file == ".DS_Store":
                     file_path = os.path.join(path, file)
@@ -36,7 +35,6 @@ class GeometryParser:
         """
         graph = Graph()
         for file in GeometryParser.get_files(path):
-            print("Parsing file {}".format(file))
             with open(file, "r") as read_stream:
                 graph.parse(read_stream)
             result = graph.query(

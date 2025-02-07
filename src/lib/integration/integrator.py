@@ -41,10 +41,10 @@ class Integrator:
         self.rdf_format = rdf_format
         if compressed:
             output_folder = Path(
-                os.path.join(output_path, f"{geometry_path.stem}_compressed")
+                os.path.join(output_path, f"level_{min_level}_compressed")
             )
         else:
-            output_folder = Path(os.path.join(output_path, geometry_path.stem))
+            output_folder = Path(os.path.join(output_path, f"level_{min_level}"))
         S2Writer.create_output_path(None, output_folder)
         self.spawn_processes(
             geometry_path, output_folder, compressed, tolerance, min_level, max_level
@@ -90,6 +90,5 @@ class Integrator:
                 graph.add(s2_triple)
             filename = filename.split("/")[-1] + file_extensions[rdf_format]
         destination = os.path.join(output_folder, filename)
-        print("Writing triples")
         print(destination)
         S2Writer.write(graph, Path(destination), rdf_format)
