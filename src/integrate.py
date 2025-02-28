@@ -30,21 +30,21 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--tolerance",
-        help="Unknown - don't modify unless you know what you're doing",
+        help="Tolerance used during spatial operations. Defaults to 1e-2",
         type=float,
         nargs="?",
         default=1e-2,
     )
     parser.add_argument(
         "--min_level",
-        help="Unknown - don't modify unless you know what you're doing",
+        help="The level where generation starts",
         type=int,
         nargs="?",
         default=1,
     )
     parser.add_argument(
         "--max_level",
-        help="Unknown - don't modify unless you know what you're doing",
+        help="The level where generation ends",
         type=int,
         nargs="?",
         default=1,
