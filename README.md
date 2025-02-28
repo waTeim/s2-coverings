@@ -65,13 +65,7 @@ docker run -v ./:/s2 s2-coverings python3 src/s2.py --geometry_path <path_to_geo
 
 Given a folder of S2 cells, described with the geosparql ontology, it's possible to create the following spatial relations between the s2 cells
 on disk and the layer of your choice.
-
-```bash
-kwg-ont:sfWithin
-kwg-ont:sfWithin
-```
-
-This effectively "connects" the S2 cells with the target layer.
+The primary relation materialized through this process is `kwg-ont:sfWithin`. This effectively "connects" the S2 cells with the target layer.
 
 **Current Production image**
 ```bash
