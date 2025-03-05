@@ -3,11 +3,13 @@ Tool for creating index-free s2 coverings, at any level
 
 ## Background
 
-[S2](http://s2geometry.io/) is a spatial grid system with hierarchy, designed to be easily indexed and queried. Knowledge graphs commonly make use of different geospatial indices for linking spatial data to areas.
+[S2](http://s2geometry.io/) is a spatial grid system with hierarchy, designed to be easily indexed and queried. Knowledge graphs commonly make use of geospatial indices as ways to connect geospatial data.
 
-At the moment, many graph databases don't have native support for making use of the s2 index system. That's where this tool comes into play.
 
-Rather than relying on geosparql functions (which in turn rely on geosparql support and indices), you can instead pre-materialize the relations between cells and query them though the KnowWhereGraph ontology.
+Rather than relying on geosparql functions (which in turn rely on geosparql support), you can instead 
+1. Generate the global spatial index (create s2 cells, as rdf statements)
+2. Pre-materialize the relations between cells (connect s2 cells with RCC8 relations)
+3. Integrate your own geometries with the S2 cells (connect the geometry to s2  cells with RCC*)
 
 This breaks the reliance on the need for the graph database to support s2 indexing and instead make use of the predicate index from the pre-materialized spatial relations.
 
@@ -15,59 +17,69 @@ This breaks the reliance on the need for the graph database to support s2 indexi
 
 There are two tools:
 
-1. s2.py: This generates the S2 cell structure at a desired layer. For example, generating cells at level 3 and 4.
+1. s2.py: This generates the S2 cell structure at a desired layer, or for an existing set of geometries 
 2. integrate.py: This performs s2 integrations against existing geometries. These may be your own geometries, they may be the output of the s2 tool. 
 
+
 ## Running
-
-### Docker
-
 The project dependencies can be difficult to install; docker images are provided so that the code can be run in different environments without needing to install dependencies. Rather than offering a docker image for each cript, both scripts are included in the image and they can be called externally
 
-#### Generating S2 Cells
+### Generating S2 Cells for a Level
 
+Given a target S2 level, the s2 generation script will generate s2 cells at the target level. 
+
+**Current Production image**
 ```bash
-git clone https://github.com/KnowWhereGraph/s2-coverings.git
-cd s2-coverings
 docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --level <level>
 ```
 
-#### S2 Integration
+**Running locally**
+```commandline
+git clone
+cd s2-coverings
+docker build -t s2-coverings .
+docker run -v ./:/s2 s2-coverings python3 src/s2.py --level 2
+```
 
+### Generating S2 Cells Over a Geometry
 
+Given a folder of RDF that describes s2 cells under the geosparql ontology, it's possible to generate new RDF of all the
+S2 cells that overlap the geometry at a certain level.
+
+The level is dictated by the min_level and max_level cli arguments. _These should be the same value_.
+
+**Current Production image**
+```bash
+docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/s2.py --path <path_to_geometries> --output_path=output/ --min_level=5 --max_level=5
+```
+
+**Running locally**
+```commandline
+git clone
+cd s2-coverings
+docker build -t s2-coverings .
+docker run -v ./:/s2 s2-coverings python3 src/s2.py --geometry_path <path_to_geometries> --output_path=output/ --min_level=5 --max_level=5
+```
+
+### Integrating S2 Cells With Another Layer 
+
+Given a folder of S2 cells, described with the geosparql ontology, it's possible to create the following spatial relations between the s2 cells
+on disk and the layer of your choice.
+The primary relation materialized through this process is `kwg-ont:sfWithin`. This effectively "connects" the S2 cells with the target layer.
+
+**Current Production image**
 ```bash
 docker run -v ./:/s2 ghcr.io/knowwheregraph/s2-coverings:main python3 src/integrate.py --path <path to geometries>
 ```
 
-A complete list of options can be found by running the help command on each tool. For example,
-```bash
-python3 src/s2.py --help
-options:
-  -h, --help            show this help message and exit
-  --level LEVEL         Level at which the s2 cells are generated for
-  --format [FORMAT]     The format to write the RDF in. Options are xml, n3, turtle, nt, pretty-xml, trix, trig, nquads, json-ld, hext
-  --compressed [COMPRESSED]
-                        use the S2 hierarchy to write a compressed collection of relations at various levels
+**Using locally**
+```commandline
+git clone
+cd s2-coverings
+docker build -t s2-coverings .
+docker run -v ./:/s2 s2-coverings python3 src/integrate.py --path some_path_to_data
+
 ```
-Results will be written to the `output/` folder. The results can then be loaded into your graph database and queried. For more information on querying with the KnowWhereGraph ontology, visit the [docs site](https://knowwheregraph.github.io/#/).
-
-### Locally
-
-Due to the steps involved with installing the s2 libray bindings and different approaches needed for each architecture - running outside of Docker isn't supported. If you're inspired, the Dockerfile has all necessary steps to install the requirements to run the tool.
-
-## Development
-
-### Running Locally With Docker
-
-During development, you'll need a way to run the local codebase with your changes. To do this run the following, 
-
-```bash
-docker compose up -d
-docker exec -it s2 bash
-python3 src/s2.py --level <s2_level>
-```
-
-The source code in the container will stay up to date with the local filesystem, so there's no need to rebuild the image after each code change.
 
 ### Linting
 
