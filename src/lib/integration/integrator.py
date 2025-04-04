@@ -13,7 +13,7 @@ from ..rdf.kwg_ont import file_extensions
 from ..rdf.s2_writer import S2Writer
 
 
-class ExtendedIntegrator:
+class Integrator:
     """
     Extended version of Integrator that flushes RDF triples in batches.
     """
@@ -107,6 +107,9 @@ class ExtendedIntegrator:
         file_counter = 0
 
         for geo_feature in geo_features:
+            # Log the identifying information for the feature.
+            print(f"Processing feature with IRI: {geo_feature.iri}")
+
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
