@@ -51,11 +51,17 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--format",
-        help="The format to write the RDF in. Options are xml, n3, turtle, nt, pretty-xml, trix, trig, nquads, "
-        "json-ld, hext",
+        help="The format to write the RDF in. Options are xml, n3, turtle, nt, pretty-xml, trix, trig, nquads, json-ld, hext",
         type=str,
         nargs="?",
         default="ttl",
+    )
+    parser.add_argument(
+        "--pool-size",
+        help="Number of processes to use in the pool",
+        type=int,
+        nargs="?",
+        default=4,
     )
     args = parser.parse_args()
     Integrator(
@@ -66,4 +72,5 @@ if __name__ == "__main__":
         args.min_level,
         args.max_level,
         args.format,
+        args.pool_size,  # new argument passed to Integrator
     )
