@@ -11,6 +11,14 @@ from ..geo.constrained_s2_region_converer import ConstrainedS2RegionCoverer
 from ..geo.geometric_features import GeometricFeatures
 from ..rdf.kwg_ont import file_extensions
 from ..rdf.s2_writer import S2Writer
+from itertools import islice
+
+def partition_generator(generator, pool_size: int):
+    """
+    Partition the generator into pool_size iterators using round-robin assignment.
+    """
+    iters = itertools.tee(generator, pool_size)
+    return [islice(it, i, None, pool_size) for i, it in enumerate(iters)]
 
 
 class Integrator:
@@ -66,12 +74,12 @@ class Integrator:
             max_level (int): Maximum S2 level for processing.
             pool_size (int): Number of processes to use in the pool.
         """
-       # Ensure geo_features is a list for slicing.
-        geo_features = list(GeometricFeatures(geometry_path, tolerance, min_level, max_level))
-        # Partition the geo_features into exactly pool_size sublists.
-        partitions = [geo_features[i::pool_size] for i in range(pool_size)]
-        # Pair each partition with a process ID.
-        partitioned_data = list(enumerate(partitions))  # Each element is a tuple: (process_id, features_subset)
+        # Get the features as an iterator.
+        geo_features = GeometricFeatures(geometry_path, tolerance, min_level, max_level)
+        # Partition the features using round-robin without converting all to a list.
+        partitions = partition_generator(geo_features, pool_size)
+        # Pair each partition with a unique process ID.
+        partitioned_data = list(enumerate(partitions))  # Each element: (process_id, iterator_of_features)
         write = partial(
             self.write_all_relations_batch,
             output_folder=output_folder,
@@ -94,18 +102,17 @@ class Integrator:
         max_level: int,
         flush_threshold: int,
     ) -> None:
-        # Unpack the tuple: process_id and its assigned features.
         process_id, features_subset = data
         graph = Graph()
         triple_count = 0
         file_counter = 0
         feature_count = 0
 
-        print(f"[Process {process_id}] Starting processing of {len(features_subset)} features.")
+        print(f"[Process {process_id}] Starting processing.")
 
         for feature in features_subset:
             feature_count += 1
-            #print(f"[Process {process_id}] Processing feature with IRI: {feature.iri}")
+            #print(f"[Process {process_id}] Processing feature {feature_count} with IRI: {feature.iri}")
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
@@ -132,4 +139,4 @@ class Integrator:
             print(f"[Process {process_id}] Writing remaining {triple_count} triples to {destination}")
             S2Writer.write(graph, Path(destination), rdf_format)
 
-        print(f"[Process {process_id}] Finished processing features count={feature_count}")
+        print(f"[Process {process_id}] Finished processing {feature_count} features.")
