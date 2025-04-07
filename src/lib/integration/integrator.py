@@ -82,7 +82,7 @@ class Integrator:
             flush_threshold=self.flush_threshold,
         )
         with Pool(processes=pool_size) as pool:
-            pool.map(write, partitioned_data))
+            pool.map(write, partitioned_data)
 
     def write_all_relations_batch(
         self,
