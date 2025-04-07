@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import itertools
+
 from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
