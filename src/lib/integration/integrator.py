@@ -66,8 +66,12 @@ class Integrator:
             max_level (int): Maximum S2 level for processing.
             pool_size (int): Number of processes to use in the pool.
         """
+       # Convert the geo_features to a list so we can partition them.
+        geo_features = list(GeometricFeatures(geometry_path, tolerance, min_level, max_level))
+        # Partition geo_features into exactly pool_size sublists.
+        partitions = [geo_features[i::pool_size] for i in range(pool_size)]
         write = partial(
-            self.write_all_relations,
+            self.write_all_relations_batch,
             output_folder=output_folder,
             is_compressed=compressed,
             rdf_format=self.rdf_format,
@@ -75,13 +79,12 @@ class Integrator:
             max_level=max_level,
             flush_threshold=self.flush_threshold,
         )
-        geo_features = GeometricFeatures(geometry_path, tolerance, min_level, max_level)
         with Pool(processes=pool_size) as pool:
-            pool.map(write, [geo_features])
+            pool.map(write, partitions)
 
-    def write_all_relations(
+    def write_all_relations_batch(
         self,
-        geo_features: GeometricFeatures,
+        features_subset: list,
         output_folder: str,
         is_compressed: bool,
         rdf_format: str,
@@ -89,27 +92,15 @@ class Integrator:
         max_level: int,
         flush_threshold: int,
     ) -> None:
-        """
-        Process geometric features into RDF triples incrementally. When the number of accumulated triples
-        reaches flush_threshold, the current graph is written to disk and then reset.
-
-        Args:
-            geo_features (GeometricFeatures): The geometric features to process.
-            output_folder (str): The folder to write output files.
-            is_compressed (bool): Flag indicating if compression is applied.
-            rdf_format (str): The RDF serialization format.
-            min_level (int): The minimum S2 level to use.
-            max_level (int): The maximum S2 level to use.
-            flush_threshold (int): The number of triples to accumulate before flushing.
-        """
         graph = Graph()
         triple_count = 0
         file_counter = 0
+        feature_count = 0
 
-        for geo_feature in geo_features:
-            # Log the identifying information for the feature.
-            print(f"Processing feature with IRI: {geo_feature.iri}")
-
+        # Process each feature in the assigned sub-collection.
+        for feature in features_subset:
+            feature_count += 1
+            print(f"Processing feature with IRI: {feature.iri}")
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
@@ -117,23 +108,27 @@ class Integrator:
             else:
                 coverer.set_min_level(0)
 
-            for s2_triple in geo_feature.yield_s2_relations(coverer):
+            for s2_triple in feature.yield_s2_relations(coverer):
                 graph.add(s2_triple)
                 triple_count += 1
 
                 if triple_count >= flush_threshold:
-                    filename = f"triples_{file_counter}" + file_extensions[rdf_format]
+                    # Create a filename unique for this batch.
+                    filename = f"batch_{file_counter}" + file_extensions[rdf_format]
                     destination = os.path.join(output_folder, filename)
                     print(f"Flushing {triple_count} triples to {destination}")
                     S2Writer.write(graph, Path(destination), rdf_format)
-                    # Reset the graph and counters for the next batch.
+                    # Reset the graph and counter for the next flush.
                     graph = Graph()
                     triple_count = 0
                     file_counter += 1
 
-        # Write any remaining triples that did not reach the threshold.
+        # Write out any remaining triples for this batch.
         if triple_count > 0:
-            filename = f"triples_{file_counter}" + file_extensions[rdf_format]
+            filename = f"batch_{file_counter}" + file_extensions[rdf_format]
             destination = os.path.join(output_folder, filename)
             print(f"Writing remaining {triple_count} triples to {destination}")
             S2Writer.write(graph, Path(destination), rdf_format)
+
+        # Log the total number of features processed.
+        print(f"Total features processed: {feature_count}")
