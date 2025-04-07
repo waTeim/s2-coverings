@@ -28,7 +28,7 @@ class Integrator:
         max_level: int,
         rdf_format: str,
         pool_size: int = 4,
-        flush_threshold: int = 10000,  # Number of triples to accumulate before flushing
+        flush_threshold: int = 50000,  # Number of triples to accumulate before flushing
     ):
         """
         Create a new ExtendedIntegrator.
