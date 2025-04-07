@@ -66,10 +66,12 @@ class Integrator:
             max_level (int): Maximum S2 level for processing.
             pool_size (int): Number of processes to use in the pool.
         """
-       # Convert the geo_features to a list so we can partition them.
+       # Ensure geo_features is a list for slicing.
         geo_features = list(GeometricFeatures(geometry_path, tolerance, min_level, max_level))
-        # Partition geo_features into exactly pool_size sublists.
+        # Partition the geo_features into exactly pool_size sublists.
         partitions = [geo_features[i::pool_size] for i in range(pool_size)]
+        # Pair each partition with a process ID.
+        partitioned_data = list(enumerate(partitions))  # Each element is a tuple: (process_id, features_subset)
         write = partial(
             self.write_all_relations_batch,
             output_folder=output_folder,
@@ -80,11 +82,11 @@ class Integrator:
             flush_threshold=self.flush_threshold,
         )
         with Pool(processes=pool_size) as pool:
-            pool.map(write, partitions)
+            pool.map(write, partitioned_data))
 
     def write_all_relations_batch(
         self,
-        features_subset: list,
+        data: tuple,
         output_folder: str,
         is_compressed: bool,
         rdf_format: str,
@@ -92,15 +94,18 @@ class Integrator:
         max_level: int,
         flush_threshold: int,
     ) -> None:
+        # Unpack the tuple: process_id and its assigned features.
+        process_id, features_subset = data
         graph = Graph()
         triple_count = 0
         file_counter = 0
         feature_count = 0
 
-        # Process each feature in the assigned sub-collection.
+        print(f"[Process {process_id}] Starting processing of {len(features_subset)} features.")
+
         for feature in features_subset:
             feature_count += 1
-            print(f"Processing feature with IRI: {feature.iri}")
+            print(f"[Process {process_id}] Processing feature with IRI: {feature.iri}")
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
@@ -113,22 +118,18 @@ class Integrator:
                 triple_count += 1
 
                 if triple_count >= flush_threshold:
-                    # Create a filename unique for this batch.
-                    filename = f"batch_{file_counter}" + file_extensions[rdf_format]
+                    filename = f"proc_{process_id}_batch_{file_counter}" + file_extensions[rdf_format]
                     destination = os.path.join(output_folder, filename)
-                    print(f"Flushing {triple_count} triples to {destination}")
+                    print(f"[Process {process_id}] Flushing {triple_count} triples to {destination}")
                     S2Writer.write(graph, Path(destination), rdf_format)
-                    # Reset the graph and counter for the next flush.
-                    graph = Graph()
+                    graph = Graph()  # Reset the graph.
                     triple_count = 0
                     file_counter += 1
 
-        # Write out any remaining triples for this batch.
         if triple_count > 0:
-            filename = f"batch_{file_counter}" + file_extensions[rdf_format]
+            filename = f"proc_{process_id}_batch_{file_counter}" + file_extensions[rdf_format]
             destination = os.path.join(output_folder, filename)
-            print(f"Writing remaining {triple_count} triples to {destination}")
+            print(f"[Process {process_id}] Writing remaining {triple_count} triples to {destination}")
             S2Writer.write(graph, Path(destination), rdf_format)
 
-        # Log the total number of features processed.
-        print(f"Total features processed: {feature_count}")
+        print(f"[Process {process_id}] Finished processing features count={feature_count}")
