@@ -115,7 +115,7 @@ class Integrator:
 
         for feature in features_subset:
             feature_count += 1
-            print(f"[Process {process_id}] Processing feature with IRI: {feature.iri}")
+            #print(f"[Process {process_id}] Processing feature with IRI: {feature.iri}")
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
                 if min_level:
