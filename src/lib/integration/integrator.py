@@ -109,10 +109,12 @@ class Integrator:
         graph = Graph()
         triple_count = 0
         file_counter = 0
+        feature_count = 0
 
         print(f"[Process {process_id}] Starting processing of {len(features_subset)} features.")
 
         for feature in features_subset:
+            feature_count += 1
             print(f"[Process {process_id}] Processing feature with IRI: {feature.iri}")
             coverer = ConstrainedS2RegionCoverer(min_level, max_level)
             if not is_compressed:
